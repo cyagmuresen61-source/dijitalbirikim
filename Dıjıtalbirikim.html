@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="tr" class="theme-slate">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIJITAL BİRİKİM</title>
+  
+  <!-- UYGULAMA LOGO VE İKON AYARLARI -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2310b981' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><rect width='18' height='18' x='3' y='3' rx='2'/><circle cx='12' cy='12' r='3'/><path d='m16.5 7.5-2.5 2.5'/><path d='m7.5 16.5 2.5-2.5'/><path d='m7.5 7.5 2.5 2.5'/><path d='m16.5 16.5-2.5-2.5'/></svg>">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%2310b981'><rect width='24' height='24' rx='5'/></svg>">
+  <meta name="theme-color" content="#10b981">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Plus Jakarta Sans', 'sans-serif'] },
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .theme-slate { --bg-main: #f1f5f9; --bg-card: #ffffff; --border: #e2e8f0; --text-main: #0f172a; --text-muted: #64748b; --btn-sub-bg: #e2e8f0; --btn-sub-text: #1e293b; }
+    .theme-black { --bg-main: #09090b; --bg-card: #121215; --border: #27272a; --text-main: #f4f4f5; --text-muted: #a1a1aa; --btn-sub-bg: #27272a; --btn-sub-text: #f4f4f5; }
+    .theme-navy { --bg-main: #0a0e17; --bg-card: #111827; --border: #1f2937; --text-main: #f9fafb; --text-muted: #9ca3af; --btn-sub-bg: #1f2937; --btn-sub-text: #f9fafb; }
+
+    body { background-color: var(--bg-main); color: var(--text-main); transition: all 0.3s ease; }
+    .custom-card { background-color: var(--bg-card); border: 1px solid var(--border); }
+    .custom-border { border-color: var(--border); }
+    .btn-sub { background-color: var(--btn-sub-bg); color: var(--btn-sub-text); }
+    .btn-emerald { background-color: #10b981; color: white; }
+    .glass { backdrop-filter: blur(12px); background: rgba(255, 255, 255, 0.7); }
+    .dark .glass { background: rgba(18, 18, 21, 0.7); }
+
+    #sidebar { transition: transform 0.3s ease, margin-left 0.3s ease; }
+    #sidebar.collapsed { margin-left: -16rem; }
+  </style>
+</head>
+<body class="h-screen flex overflow-hidden">
+
+  <!-- ==================== 1. KULLANICI GİRİŞİ & KAYIT OL ==================== -->
+  <div id="auth-screen" class="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md">
+    <div class="custom-card w-full max-w-md rounded-3xl p-8 shadow-2xl space-y-6 relative border">
+      
+      <div class="text-center space-y-2">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-emerald-500 to-cyan-500 text-white shadow-lg shadow-emerald-500/30 mb-2">
+          <i data-lucide="vault" class="w-9 h-9"></i>
+        </div>
+        <h1 class="text-2xl font-black tracking-tight">DIJITAL BİRİKİM</h1>
+        <p class="text-xs text-slate-500">Çapraz platform akıllı birikim yönetimi</p>
+      </div>
+
+      <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl text-xs font-semibold">
+        <button type="button" id="tab-login-btn" onclick="switchAuthTab('login')" class="flex-1 py-2 rounded-lg bg-emerald-500 text-white transition">Giriş Yap</button>
+        <button type="button" id="tab-register-btn" onclick="switchAuthTab('register')" class="flex-1 py-2 rounded-lg text-slate-500 transition">Kayıt Ol</button>
+      </div>
+
+      <div id="auth-error" class="hidden p-3 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-500 text-xs font-bold text-center"></div>
+      <div id="auth-success" class="hidden p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs font-bold text-center"></div>
+
+      <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-4">
+        <div id="name-field" class="hidden">
+          <label class="text-xs font-medium text-slate-500">Ad Soyad</label>
+          <input type="text" id="auth-name" placeholder="Cihat" class="w-full mt-1 bg-transparent border custom-border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-500">
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-500">Kullanıcı Adı veya E-Posta</label>
+          <input type="text" id="auth-username" value="Cihat" required class="w-full mt-1 bg-transparent border custom-border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-500">
+        </div>
+        <div>
+          <label class="text-xs font-medium text-slate-500">Şifre</label>
+          <input type="password" id="auth-password" value="123456" required class="w-full mt-1 bg-transparent border custom-border rounded-xl px-4 py-2.5 text-sm outline-none focus:border-emerald-500">
+        </div>
+
+        <button type="submit" id="auth-submit-btn" class="w-full btn-emerald font-bold py-3 rounded-xl shadow-lg shadow-emerald-500/20 transition active:scale-95">Giriş Yap</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== 2. ANA UYGULAMA ==================== -->
+  <div id="app-screen" class="hidden flex-1 flex h-screen w-full">
+    
+    <aside id="sidebar" class="w-64 custom-card border-r flex flex-col justify-between flex-shrink-0 z-20">
+      <div>
+        <div class="p-6 flex items-center justify-between">
+          <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-emerald-500 to-cyan-500 text-white flex items-center justify-center shadow-md">
+              <i data-lucide="vault" class="w-6 h-6"></i>
+            </div>
+            <div>
+              <h2 class="font-extrabold text-sm leading-none">DIJITAL BİRİKİM</h2>
+              <span class="text-[10px] text-emerald-500 font-semibold uppercase tracking-wider">Cloud App</span>
+            </div>
+          </div>
+          <button type="button" onclick="toggleSidebar()" class="text-slate-400 hover:text-slate-600 dark:hover:text-white p-1 rounded-lg border custom-border">
+            <i data-lucide="menu" class="w-4 h-4"></i>
+          </button>
+        </div>
+
+        <nav class="px-4 space-y-1">
+          <button type="button" onclick="navTo('dashboard')" id="nav-dashboard" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 bg-emerald-500/10 text-emerald-500 rounded-xl font-semibold transition">
+            <i data-lucide="layout-dashboard" class="w-5 h-5"></i><span>Panel</span>
+          </button>
+          <button type="button" onclick="navTo('new-goal')" id="nav-new-goal" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-200/50 rounded-xl font-semibold transition">
+            <i data-lucide="target" class="w-5 h-5"></i><span>Hedeflerim</span>
+          </button>
+          <button type="button" onclick="navTo('ai-assistant')" id="nav-ai-assistant" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-200/50 rounded-xl font-semibold transition">
+            <i data-lucide="bot" class="w-5 h-5"></i><span>AI Asistan</span>
+          </button>
+          <button type="button" onclick="navTo('settings')" id="nav-settings" class="nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-200/50 rounded-xl font-semibold transition">
+            <i data-lucide="sliders" class="w-5 h-5"></i><span>Ayarlar</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="p-4 space-y-3 border-t custom-border">
+        <div class="rounded-2xl p-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white space-y-1 shadow-md">
+          <div class="flex items-center space-x-1.5">
+            <i data-lucide="mountain" class="w-4 h-4 text-yellow-300"></i>
+            <span class="text-[10px] font-bold uppercase tracking-wider text-yellow-300">Günün Sözü</span>
+          </div>
+          <p id="daily-quote" class="text-[11px] font-bold leading-tight">"Disiplin bugün, özgürlük yarın."</p>
+        </div>
+
+        <div class="flex items-center justify-between pt-1">
+          <div class="flex items-center space-x-3">
+            <div class="w-9 h-9 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center font-bold text-sm">
+              <span id="user-avatar">C</span>
+            </div>
+            <div class="overflow-hidden">
+              <p id="user-display-name" class="text-xs font-bold truncate">Cihat</p>
+              <p class="text-[10px] text-slate-400 truncate">Çevrimiçi</p>
+            </div>
+          </div>
+          <button type="button" onclick="logout()" class="text-slate-400 hover:text-rose-500 transition"><i data-lucide="log-out" class="w-4 h-4"></i></button>
+        </div>
+      </div>
+    </aside>
+
+    <div class="flex-1 flex flex-col overflow-y-auto">
+      
+      <header class="custom-card border-b px-8 py-4 flex justify-between items-center sticky top-0 z-10 glass">
+        <div class="flex items-center space-x-3">
+          <button type="button" onclick="toggleSidebar()" class="p-2 border custom-border rounded-xl text-slate-500 hover:text-emerald-500">
+            <i data-lucide="menu" class="w-5 h-5"></i>
+          </button>
+          <h1 id="page-title" class="text-lg font-bold">Panel</h1>
+        </div>
+        <button type="button" onclick="navTo('ai-assistant')" class="btn-emerald px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-2 shadow-lg shadow-emerald-500/10">
+          <i data-lucide="sparkles" class="w-4 h-4"></i>
+          <span>AI Asistan</span>
+        </button>
+      </header>
+
+      <main class="p-8 pb-20">
+
+        <div id="page-dashboard" class="space-y-6">
+          <div class="rounded-3xl p-8 bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white shadow-xl relative overflow-hidden">
+            <div class="relative z-10 space-y-2">
+              <span id="welcome-badge" class="bg-white/20 px-3 py-1 rounded-full text-xs font-semibold backdrop-blur-md">Tekrar hoş geldin Cihat 👋</span>
+              <h2 id="total-savings-text" class="text-4xl font-black">Toplam ₺0 biriktirdin</h2>
+              <p id="total-desc-text" class="text-sm opacity-90">Hedeflerine ulaşmak için harika bir gün!</p>
+            </div>
+            <i data-lucide="trending-up" class="absolute right-6 bottom-4 w-40 h-40 opacity-10"></i>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div class="custom-card p-5 rounded-2xl flex items-center space-x-4">
+              <div class="p-3 bg-emerald-500/10 text-emerald-500 rounded-xl"><i data-lucide="wallet" class="w-6 h-6"></i></div>
+              <div><p class="text-xs text-slate-400 font-medium">Toplam Birikim</p><p id="stat-current" class="text-xl font-bold">₺0</p></div>
+            </div>
+            <div class="custom-card p-5 rounded-2xl flex items-center space-x-4">
+              <div class="p-3 bg-blue-500/10 text-blue-500 rounded-xl"><i data-lucide="target" class="w-6 h-6"></i></div>
+              <div><p class="text-xs text-slate-400 font-medium">Hedef Toplam</p><p id="stat-target" class="text-xl font-bold">₺0</p></div>
+            </div>
+            <div class="custom-card p-5 rounded-2xl flex items-center space-x-4">
+              <div class="p-3 bg-purple-500/10 text-purple-500 rounded-xl"><i data-lucide="pie-chart" class="w-6 h-6"></i></div>
+              <div><p class="text-xs text-slate-400 font-medium">Genel İlerleme</p><p id="stat-ratio" class="text-xl font-bold">%0</p></div>
+            </div>
+            <div class="custom-card p-5 rounded-2xl flex items-center space-x-4">
+              <div class="p-3 bg-amber-500/10 text-amber-500 rounded-xl"><i data-lucide="check-circle" class="w-6 h-6"></i></div>
+              <div><p class="text-xs text-slate-400 font-medium">Tamamlanan</p><p id="stat-count" class="text-xl font-bold">0 / 0</p></div>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="md:col-span-2 custom-card p-6 rounded-2xl">
+              <h3 class="text-sm font-bold mb-4">Hedef Bazlı İlerleme</h3>
+              <div class="h-64"><canvas id="barChart"></canvas></div>
+            </div>
+            <div class="custom-card p-6 rounded-2xl">
+              <h3 class="text-sm font-bold mb-4">Dağılım</h3>
+              <div class="h-64 flex items-center justify-center"><canvas id="pieChart"></canvas></div>
+            </div>
+          </div>
+        </div>
+
+        <div id="page-new-goal" class="hidden space-y-8">
+          
+          <div class="custom-card p-6 rounded-3xl space-y-6 max-w-3xl mx-auto shadow-sm">
+            <div class="flex justify-between items-center border-b custom-border pb-4">
+              <div>
+                <h2 class="text-lg font-bold">Birikim Hedeflerim</h2>
+                <p class="text-xs text-slate-400">Hedeflerini oluştur, ilerlemeni takip et.</p>
+              </div>
+              <button type="button" onclick="toggleFormDisplay()" class="btn-emerald px-4 py-2 rounded-xl text-xs font-bold flex items-center space-x-1">
+                <i data-lucide="plus" class="w-4 h-4"></i><span>Yeni Hedef Ekle</span>
+              </button>
+            </div>
+
+            <form id="goal-form" onsubmit="handleCreateGoal(event)" class="space-y-4 hidden">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="text-xs font-semibold text-slate-400">Hedef Adı</label>
+                  <input type="text" id="goal-title" required placeholder="Örn: Ev Peşinatı" class="w-full mt-1 bg-transparent border custom-border rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-slate-400">Öncelik</label>
+                  <select id="goal-priority" class="w-full mt-1 bg-transparent border custom-border rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500">
+                    <option value="Yüksek">Yüksek</option>
+                    <option value="Orta" selected>Orta</option>
+                    <option value="Düşük">Düşük</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="grid grid-cols-3 gap-4">
+                <div>
+                  <label class="text-xs font-semibold text-slate-400">Hedef Tutar (₺)</label>
+                  <input type="number" id="goal-target" required placeholder="100000" class="w-full mt-1 bg-transparent border custom-border rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-slate-400">Biriken Tutar (₺)</label>
+                  <input type="number" id="goal-current" value="0" class="w-full mt-1 bg-transparent border custom-border rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500">
+                </div>
+                <div>
+                  <label class="text-xs font-semibold text-slate-400">Hedef Tarih</label>
+                  <input type="date" id="goal-date" required class="w-full mt-1 bg-transparent border custom-border rounded-xl p-2.5 text-sm outline-none focus:border-emerald-500 dark:[color-scheme:dark]">
+                </div>
+              </div>
+
+              <div>
+                <label class="text-xs font-semibold text-slate-400 block mb-2">Kategori Vurgu Rengi</label>
+                <div class="flex space-x-3" id="goal-color-picker">
+                  <button type="button" onclick="selectGoalColor('#00b4d8', this)" class="w-8 h-8 rounded-full bg-cyan-500 ring-2 ring-slate-400 flex items-center justify-center"><i data-lucide="check" class="w-4 h-4 text-white"></i></button>
+                  <button type="button" onclick="selectGoalColor('#10b981', this)" class="w-8 h-8 rounded-full bg-emerald-500 flex items-center justify-center"></button>
+                  <button type="button" onclick="selectGoalColor('#8b5cf6', this)" class="w-8 h-8 rounded-full bg-purple-500 flex items-center justify-center"></button>
+                  <button type="button" onclick="selectGoalColor('#eab308', this)" class="w-8 h-8 rounded-full bg-yellow-500 flex items-center justify-center"></button>
+                  <button type="button" onclick="selectGoalColor('#f43f5e', this)" class="w-8 h-8 rounded-full bg-rose-500 flex items-center justify-center"></button>
+                </div>
+              </div>
+
+              <button type="submit" class="w-full btn-emerald font-bold py-3 rounded-xl shadow-lg transition">Kaydet</button>
+            </form>
+          </div>
+
+          <div>
+            <h3 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-4">Mevcut Hedef Kutucukları</h3>
+            <div id="goals-cards-container" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+          </div>
+        </div>
+
+        <div id="page-ai-assistant" class="hidden max-w-4xl mx-auto space-y-4">
+          <div class="custom-card rounded-3xl p-6 h-[550px] flex flex-col justify-between">
+            <div class="flex items-center space-x-3 pb-4 border-b custom-border">
+              <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center"><i data-lucide="bot" class="w-6 h-6"></i></div>
+              <div><h3 class="font-bold text-sm">DIJITAL BİRİKİM AI Asistanı</h3><p class="text-[10px] text-slate-400">Akıllı Birikim Danışmanı</p></div>
+            </div>
+
+            <div id="ai-chat-box" class="flex-1 overflow-y-auto py-4 space-y-4 pr-2">
+              <div class="flex items-start space-x-3">
+                <div class="bg-emerald-500/20 text-emerald-500 p-2 rounded-xl"><i data-lucide="bot" class="w-4 h-4"></i></div>
+                <div class="custom-card p-3.5 rounded-2xl text-xs max-w-md">
+                  Merhaba! Ben yapay zeka birikim danışmanınız. Hedeflerinize ulaşmanız için bütçenizi analiz edebilirim. 🎯
+                </div>
+              </div>
+            </div>
+
+            <div class="pt-3 border-t custom-border flex space-x-2">
+              <input type="text" id="ai-input" placeholder="Birikim hakkında soru sor..." class="flex-1 bg-transparent border custom-border px-4 py-3 rounded-xl text-xs outline-none focus:border-emerald-500" onkeypress="if(event.key==='Enter') sendAiMessage()">
+              <button type="button" onclick="sendAiMessage()" class="btn-emerald px-5 py-3 rounded-xl font-bold text-xs"><i data-lucide="send" class="w-4 h-4"></i></button>
+            </div>
+          </div>
+        </div>
+
+        <div id="page-settings" class="hidden max-w-3xl mx-auto space-y-6">
+          <div class="custom-card p-6 rounded-3xl space-y-4">
+            <h3 class="text-sm font-bold flex items-center space-x-2"><i data-lucide="palette" class="w-4 h-4 text-emerald-500"></i><span>Arayüz Teması</span></h3>
+            <div class="grid grid-cols-3 gap-4">
+              <button type="button" onclick="setTheme('theme-slate')" class="p-4 rounded-2xl border border-slate-300 bg-[#f1f5f9] text-slate-800 text-xs font-bold flex flex-col items-center space-y-2">
+                <div class="w-6 h-6 rounded-full bg-slate-200 border border-slate-400"></div>
+                <span>Soft Slate (Grimsi)</span>
+              </button>
+              <button type="button" onclick="setTheme('theme-black')" class="p-4 rounded-2xl border border-zinc-700 bg-[#09090b] text-white text-xs font-bold flex flex-col items-center space-y-2">
+                <div class="w-6 h-6 rounded-full bg-zinc-900 border border-zinc-700"></div>
+                <span>Siyah Tema</span>
+              </button>
+              <button type="button" onclick="setTheme('theme-navy')" class="p-4 rounded-2xl border border-gray-800 bg-[#0a0e17] text-white text-xs font-bold flex flex-col items-center space-y-2">
+                <div class="w-6 h-6 rounded-full bg-gray-900 border border-gray-700"></div>
+                <span>Lacivert Tema</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="custom-card p-6 rounded-3xl space-y-4">
+            <h3 class="text-sm font-bold flex items-center space-x-2"><i data-lucide="user-check" class="w-4 h-4 text-emerald-500"></i><span>Şifre & Hesap Bilgileri Değiştir</span></h3>
+            <form onsubmit="handleUpdateProfile(event)" class="space-y-4">
+              <div>
+                <label class="text-xs font-medium text-slate-400">Kullanıcı Adı</label>
+                <input type="text" id="setting-username" value="Cihat" class="w-full mt-1 bg-transparent border custom-border rounded-xl p-3 text-xs outline-none focus:border-emerald-500">
+              </div>
+              <div>
+                <label class="text-xs font-medium text-slate-400">Yeni Şifre</label>
+                <input type="password" id="setting-password" placeholder="••••••••" class="w-full mt-1 bg-transparent border custom-border rounded-xl p-3 text-xs outline-none focus:border-emerald-500">
+              </div>
+              <button type="submit" class="btn-emerald font-bold px-6 py-2.5 rounded-xl text-xs">Şifreyi / Kullanıcı Adını Kaydet</button>
+            </form>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <div id="contrib-modal" class="fixed inset-0 z-50 bg-black/60 hidden items-center justify-center p-4">
+    <div class="custom-card w-full max-w-sm rounded-3xl p-6 space-y-4 shadow-2xl">
+      <h3 id="contrib-title" class="font-bold text-sm">Katkı Ekle</h3>
+      <input type="number" id="contrib-amount" placeholder="Tutar (₺)" class="w-full bg-transparent border custom-border rounded-xl p-3 text-sm outline-none focus:border-emerald-500">
+      <div class="flex justify-end space-x-2">
+        <button type="button" onclick="closeContribModal()" class="px-4 py-2 border custom-border rounded-xl text-xs font-bold">İptal</button>
+        <button type="button" onclick="saveContribution()" class="btn-emerald px-4 py-2 rounded-xl text-xs font-bold">Ekle</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    let usersDatabase = [
+      { username: 'cihat', password: '123456', name: 'Cihat' },
+      { username: 'quantiva2@gmail.com', password: '123456', name: 'Quantiva' }
+    ];
+
+    let activeTab = 'login';
+
+    let state = {
+      selectedColor: '#00b4d8',
+      activeContribId: null,
+      goals: [
+        { id: 1, title: 'Yaz Tatili', target: 60000, current: 60000, priority: 'Yüksek', color: '#00b4d8', date: '1 Ağustos 2026' },
+        { id: 2, title: 'Acil Durum Fonu', target: 100000, current: 64000, priority: 'Yüksek', color: '#10b981', date: '31 Aralık 2026' },
+        { id: 3, title: 'Yeni Laptop', target: 45000, current: 12000, priority: 'Orta', color: '#8b5cf6', date: '15 Ekim 2026' }
+      ]
+    };
+
+    let barChartInst = null;
+    let pieChartInst = null;
+
+    function switchAuthTab(tab) {
+      activeTab = tab;
+      const errBox = document.getElementById('auth-error');
+      const succBox = document.getElementById('auth-success');
+      errBox.classList.add('hidden');
+      succBox.classList.add('hidden');
+
+      if(tab === 'login') {
+        document.getElementById('name-field').classList.add('hidden');
+        document.getElementById('auth-submit-btn').innerText = 'Giriş Yap';
+        document.getElementById('tab-login-btn').className = 'flex-1 py-2 rounded-lg bg-emerald-500 text-white transition';
+        document.getElementById('tab-register-btn').className = 'flex-1 py-2 rounded-lg text-slate-500 transition';
+      } else {
+        document.getElementById('name-field').classList.remove('hidden');
+        document.getElementById('auth-submit-btn').innerText = 'Hesap Oluştur ve Giriş Yap';
+        document.getElementById('tab-register-btn').className = 'flex-1 py-2 rounded-lg bg-emerald-500 text-white transition';
+        document.getElementById('tab-login-btn').className = 'flex-1 py-2 rounded-lg text-slate-500 transition';
+      }
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+
+    function handleAuth(e) {
+      e.preventDefault();
+      const u = document.getElementById('auth-username').value.trim();
+      const p = document.getElementById('auth-password').value.trim();
+      const n = document.getElementById('auth-name').value.trim() || u;
+      const errBox = document.getElementById('auth-error');
+      const succBox = document.getElementById('auth-success');
+
+      errBox.classList.add('hidden');
+      succBox.classList.add('hidden');
+
+      if(activeTab === 'register') {
+        if(!u || !p) {
+          errBox.innerText = 'Lütfen kullanıcı adı ve şifre girin.';
+          errBox.classList.remove('hidden');
+          return;
+        }
+        usersDatabase.push({ username: u.toLowerCase(), password: p, name: n });
+        succBox.innerText = '🎉 Hesabınız oluşturuldu, giriş yapılıyor...';
+        succBox.classList.remove('hidden');
+
+        setTimeout(() => {
+          completeLogin(u, n);
+        }, 600);
+      } else {
+        const userFound = usersDatabase.find(x => x.username.toLowerCase() === u.toLowerCase() && x.password === p);
+
+        if(userFound) {
+          completeLogin(userFound.username, userFound.name);
+        } else {
+          errBox.innerText = '❌ Kullanıcı adı veya şifre hatalı!';
+          errBox.classList.remove('hidden');
+        }
+      }
+    }
+
+    function completeLogin(username, name) {
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('app-screen').classList.remove('hidden');
+      
+      document.getElementById('user-display-name').innerText = username;
+      document.getElementById('user-avatar').innerText = username.charAt(0).toUpperCase();
+      document.getElementById('welcome-badge').innerText = `Tekrar hoş geldin ${username} 👋`;
+
+      renderDashboard();
+      renderGoalsCards();
+    }
+
+    function logout() {
+      document.getElementById('app-screen').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('hidden');
+    }
+
+    function navTo(page) {
+      ['dashboard', 'new-goal', 'ai-assistant', 'settings'].forEach(p => {
+        document.getElementById(`page-${p}`).classList.add('hidden');
+        document.getElementById(`nav-${p}`).className = 'nav-btn w-full flex items-center space-x-3 px-4 py-3 text-slate-500 hover:bg-slate-200/50 rounded-xl font-semibold transition';
+      });
+
+      document.getElementById(`page-${page}`).classList.remove('hidden');
+      document.getElementById(`nav-${page}`).className = 'nav-btn w-full flex items-center space-x-3 px-4 py-3 bg-emerald-500/10 text-emerald-500 rounded-xl font-semibold transition';
+
+      const titles = { 'dashboard': 'Panel', 'new-goal': 'Hedeflerim', 'ai-assistant': 'AI Asistan', 'settings': 'Ayarlar' };
+      document.getElementById('page-title').innerText = titles[page];
+
+      if(page === 'dashboard') renderDashboard();
+      if(page === 'new-goal') renderGoalsCards();
+    }
+
+    function toggleFormDisplay() {
+      document.getElementById('goal-form').classList.toggle('hidden');
+    }
+
+    function selectGoalColor(color, btn) {
+      state.selectedColor = color;
+      const parent = document.getElementById('goal-color-picker');
+      Array.from(parent.children).forEach(b => {
+        b.className = 'w-8 h-8 rounded-full flex items-center justify-center';
+        b.innerHTML = '';
+      });
+      btn.className = `w-8 h-8 rounded-full ring-2 ring-slate-400 flex items-center justify-center`;
+      btn.style.backgroundColor = color;
+      btn.innerHTML = `<i data-lucide="check" class="w-4 h-4 text-white"></i>`;
+      lucide.createIcons();
+    }
+
+    function handleCreateGoal(e) {
+      e.preventDefault();
+      const title = document.getElementById('goal-title').value;
+      const target = parseFloat(document.getElementById('goal-target').value);
+      const current = parseFloat(document.getElementById('goal-current').value) || 0;
+      const priority = document.getElementById('goal-priority').value;
+      const dateVal = document.getElementById('goal-date').value;
+
+      let formattedDate = '31 Aralık 2026';
+      if(dateVal) {
+        const d = new Date(dateVal);
+        formattedDate = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' });
+      }
+
+      state.goals.push({
+        id: Date.now(),
+        title,
+        target,
+        current,
+        priority,
+        color: state.selectedColor,
+        date: formattedDate
+      });
+
+      document.getElementById('goal-title').value = '';
+      document.getElementById('goal-target').value = '';
+      document.getElementById('goal-current').value = '0';
+      toggleFormDisplay();
+
+      renderGoalsCards();
+      renderDashboard();
+    }
+
+    function renderGoalsCards() {
+      const container = document.getElementById('goals-cards-container');
+      container.innerHTML = '';
+
+      state.goals.forEach(g => {
+        const p = Math.min(100, Math.round((g.current / g.target) * 100));
+
+        container.innerHTML += `
+          <div class="custom-card p-6 rounded-3xl space-y-4 relative flex flex-col justify-between shadow-sm">
+            <div class="flex justify-between items-start">
+              <span class="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 text-[10px] px-3 py-1 rounded-full font-bold uppercase tracking-wide">🚩 ${g.priority}</span>
+              <div class="text-2xl font-black" style="color: ${g.color}">${p}%</div>
+            </div>
+            <div>
+              <h4 class="font-extrabold text-base">${g.title}</h4>
+              <p class="text-xs text-slate-400">📅 ${g.date}</p>
+            </div>
+            <div class="grid grid-cols-2 text-xs border-t custom-border pt-3">
+              <div><p class="text-slate-400">BİRİKEN</p><p class="font-bold text-sm" style="color: ${g.color}">₺${g.current.toLocaleString('tr-TR')}</p></div>
+              <div><p class="text-slate-400">HEDEF</p><p class="font-bold text-sm">₺${g.target.toLocaleString('tr-TR')}</p></div>
+            </div>
+            <div class="flex items-center space-x-2 pt-2">
+              <button type="button" onclick="openContribModal(${g.id})" class="flex-1 btn-sub py-2.5 rounded-xl text-xs font-bold flex justify-center items-center space-x-1 shadow-sm"><i data-lucide="plus" class="w-3.5 h-3.5"></i><span>Katkı Ekle</span></button>
+              <button type="button" onclick="deleteGoal(${g.id})" class="p-2.5 text-slate-400 hover:text-rose-500 btn-sub rounded-xl transition"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+            </div>
+          </div>
+        `;
+      });
+      lucide.createIcons();
+    }
+
+    function deleteGoal(id) {
+      if(confirm('Bu hedef silinsin mi?')) {
+        state.goals = state.goals.filter(x => x.id !== id);
+        renderGoalsCards();
+        renderDashboard();
+      }
+    }
+
+    function renderDashboard() {
+      let totTarget = 0, totCurrent = 0, done = 0;
+      state.goals.forEach(g => { 
+        totTarget += g.target; 
+        totCurrent += g.current; 
+        if(g.current >= g.target) done++;
+      });
+
+      const ratio = totTarget === 0 ? 0 : Math.round((totCurrent / totTarget) * 100);
+
+      document.getElementById('total-savings-text').innerText = `Toplam ₺${totCurrent.toLocaleString('tr-TR')} biriktirdin`;
+      document.getElementById('stat-current').innerText = `₺${totCurrent.toLocaleString('tr-TR')}`;
+      document.getElementById('stat-target').innerText = `₺${totTarget.toLocaleString('tr-TR')}`;
+      document.getElementById('stat-ratio').innerText = `%${ratio}`;
+      document.getElementById('stat-count').innerText = `${done} / ${state.goals.length}`;
+
+      renderCharts();
+    }
+
+    function renderCharts() {
+      if(barChartInst) barChartInst.destroy();
+      if(pieChartInst) pieChartInst.destroy();
+
+      const labels = state.goals.map(g => g.title);
+      const currents = state.goals.map(g => g.current);
+      const colors = state.goals.map(g => g.color);
+
+      const ctxBar = document.getElementById('barChart').getContext('2d');
+      barChartInst = new Chart(ctxBar, {
+        type: 'bar',
+        data: { labels, datasets: [{ label: 'Biriken (₺)', data: currents, backgroundColor: colors, borderRadius: 8 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+      });
+
+      const ctxPie = document.getElementById('pieChart').getContext('2d');
+      pieChartInst = new Chart(ctxPie, {
+        type: 'doughnut',
+        data: { labels, datasets: [{ data: currents, backgroundColor: colors }] },
+        options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+      });
+    }
+
+    function openContribModal(id) {
+      state.activeContribId = id;
+      document.getElementById('contrib-modal').classList.remove('hidden');
+      document.getElementById('contrib-modal').classList.add('flex');
+    }
+    function closeContribModal() {
+      document.getElementById('contrib-modal').classList.add('hidden');
+      document.getElementById('contrib-modal').classList.remove('flex');
+    }
+    function saveContribution() {
+      const val = parseFloat(document.getElementById('contrib-amount').value);
+      if(val && val > 0) {
+        const g = state.goals.find(x => x.id === state.activeContribId);
+        g.current += val;
+        closeContribModal();
+        document.getElementById('contrib-amount').value = '';
+
+        if(typeof confetti !== 'undefined') confetti({ particleCount: 120, spread: 80, origin: { y: 0.6 } });
+        
+        if(g.current >= g.target) {
+          alert(`🎉 TEBRİKLER! "${g.title}" hedefinizi %100 tamamladınız! Harika bir başarı!`);
+        }
+        renderGoalsCards();
+        renderDashboard();
+      }
+    }
+
+    function sendAiMessage() {
+      const input = document.getElementById('ai-input');
+      const txt = input.value.trim();
+      if(!txt) return;
+
+      const chat = document.getElementById('ai-chat-box');
+      chat.innerHTML += `<div class="text-right"><span class="btn-emerald px-4 py-2.5 rounded-2xl text-xs inline-block shadow-sm">${txt}</span></div>`;
+      input.value = '';
+      chat.scrollTop = chat.scrollHeight;
+
+      setTimeout(() => {
+        chat.innerHTML += `
+          <div class="flex items-start space-x-3">
+            <div class="bg-emerald-500/20 text-emerald-500 p-2 rounded-xl"><i data-lucide="bot" class="w-4 h-4"></i></div>
+            <div class="custom-card p-3.5 rounded-2xl text-xs max-w-md">
+              🤖 "${txt}" sorunuza cevaben: Bütçenizdeki birikim oranınızı artırmak hedeflerinizi öne çekecektir.
+            </div>
+          </div>
+        `;
+        chat.scrollTop = chat.scrollHeight;
+        lucide.createIcons();
+      }, 700);
+    }
+
+    function setTheme(themeName) {
+      document.body.className = `h-screen flex overflow-hidden ${themeName}`;
+    }
+
+    function handleUpdateProfile(e) {
+      e.preventDefault();
+      const u = document.getElementById('setting-username').value;
+      const p = document.getElementById('setting-password').value;
+      
+      const currentUser = usersDatabase[0];
+      if(u) currentUser.username = u;
+      if(p) currentUser.password = p;
+
+      document.getElementById('user-display-name').innerText = currentUser.username;
+      document.getElementById('welcome-badge').innerText = `Tekrar hoş geldin ${currentUser.username} 👋`;
+      alert('Kullanıcı adı ve şifreniz güncellendi.');
+    }
+  </script>
+</body>
+</html>
