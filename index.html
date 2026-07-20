@@ -23,7 +23,6 @@
   </script>
 
   <style>
-    /* HAFİF GRİLEŞTİRİLMİŞ SOFT SLATE TEMA */
     .theme-slate { --bg-main: #e2e8f0; --bg-card: #f8fafc; --border: #cbd5e1; --text-main: #0f172a; --text-muted: #64748b; --btn-sub-bg: #cbd5e1; --btn-sub-text: #1e293b; --input-bg: #ffffff; }
     .theme-black { --bg-main: #09090b; --bg-card: #121215; --border: #27272a; --text-main: #f4f4f5; --text-muted: #a1a1aa; --btn-sub-bg: #27272a; --btn-sub-text: #f4f4f5; --input-bg: #18181b; }
     .theme-navy { --bg-main: #0a0e17; --bg-card: #111827; --border: #1f2937; --text-main: #f9fafb; --text-muted: #9ca3af; --btn-sub-bg: #1f2937; --btn-sub-text: #f9fafb; --input-bg: #111827; }
@@ -151,7 +150,7 @@
               <span id="current-date-text">21 Temmuz 2026</span>
               <span>•</span>
               <i data-lucide="clock" class="w-3.5 h-3.5 text-emerald-500"></i>
-              <span id="current-time-text">01:50</span>
+              <span id="current-time-text">02:05</span>
             </div>
           </div>
         </div>
@@ -216,7 +215,7 @@
           </div>
         </div>
 
-        <!-- HEDEFLERİM SAYFASI (RENK SEÇİCİ GERİ EKLENDİ) -->
+        <!-- HEDEFLERİM SAYFASI -->
         <div id="page-new-goal" class="hidden space-y-8">
           <div class="custom-card p-6 rounded-3xl space-y-6 max-w-3xl mx-auto shadow-sm">
             <div class="flex justify-between items-center border-b custom-border pb-4">
@@ -260,7 +259,6 @@
                 </div>
               </div>
 
-              <!-- HEDEF KART TEMA / TERCİH EDİLEN RENK SEÇİCİSİ -->
               <div>
                 <label id="t-lbl-color" class="text-xs font-semibold text-muted block mb-2">Hedef Vurgu Rengi</label>
                 <div class="flex space-x-3 rtl:space-x-reverse" id="goal-color-picker">
@@ -282,26 +280,26 @@
           </div>
         </div>
 
-        <!-- AI ASİSTAN SAYFASI -->
+        <!-- AI ASİSTAN SAYFASI (DOĞRU VE PROFESYONEL FİNANS YÖNLENDİRMESİ) -->
         <div id="page-ai-assistant" class="hidden max-w-4xl mx-auto space-y-4">
           <div class="custom-card rounded-3xl p-6 h-[550px] flex flex-col justify-between shadow-lg">
             <div class="flex items-center space-x-3 rtl:space-x-reverse pb-4 border-b custom-border">
               <div class="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-500 flex items-center justify-center"><i data-lucide="bot" class="w-6 h-6"></i></div>
-              <div><h3 class="font-bold text-sm">DIJITAL BİRİKİM AI</h3><p id="t-ai-sub" class="text-[10px] text-muted">Finans, Altın, Döviz & Uygulama Danışmanı</p></div>
+              <div><h3 class="font-bold text-sm">DIJITAL BİRİKİM AI</h3><p id="t-ai-sub" class="text-[10px] text-muted">Altın, Döviz & Finans Danışmanı</p></div>
             </div>
 
             <div id="ai-chat-box" class="flex-1 overflow-y-auto py-4 space-y-4 pr-2">
               <div class="flex items-start space-x-3 rtl:space-x-reverse">
                 <div class="bg-emerald-500/20 text-emerald-500 p-2 rounded-xl"><i data-lucide="bot" class="w-4 h-4"></i></div>
                 <div class="custom-card p-3.5 rounded-2xl text-xs max-w-md shadow-sm">
-                  Merhaba! Ben Dijital Birikim Finans ve Uygulama Asistanıyım. 🎯<br><br>
-                  Bana <b>altın, döviz (dolar/euro), birikim tavsiyeleri, enflasyondan korunma yolları</b> veya <b>uygulamanın kullanımı</b> hakkında dilediğin soruyu sorabilirsin!
+                  Merhaba! Ben Dijital Birikim Asistanıyım. 🎯<br><br>
+                  Bana <b>altın fiyatları, döviz kurları, birikim ipuçları</b> veya <b>uygulamanın kullanımı</b> hakkında her şeyi sorabilirsin!
                 </div>
               </div>
             </div>
 
             <div class="pt-3 border-t custom-border flex space-x-2 rtl:space-x-reverse">
-              <input type="text" id="ai-input" placeholder="Altın, döviz, birikim veya uygulama hakkında sor..." class="flex-1 custom-input px-4 py-3 rounded-xl text-xs outline-none focus:border-emerald-500" onkeypress="if(event.key==='Enter') sendAiMessage()">
+              <input type="text" id="ai-input" placeholder="Altın ne kadar?, Döviz kuru kaç?, birikim önerisi..." class="flex-1 custom-input px-4 py-3 rounded-xl text-xs outline-none focus:border-emerald-500" onkeypress="if(event.key==='Enter') sendAiMessage()">
               <button type="button" onclick="sendAiMessage()" class="btn-emerald px-5 py-3 rounded-xl font-bold text-xs flex items-center space-x-1"><i data-lucide="send" class="w-4 h-4"></i></button>
             </div>
           </div>
@@ -313,7 +311,7 @@
             <h3 id="t-theme-title" class="text-sm font-bold flex items-center space-x-2 rtl:space-x-reverse"><i data-lucide="palette" class="w-4 h-4 text-emerald-500"></i><span>Arayüz Teması</span></h3>
             <div class="grid grid-cols-3 gap-4">
               <button type="button" onclick="setTheme('theme-slate')" class="p-4 rounded-2xl border border-slate-300 bg-[#e2e8f0] text-slate-800 text-xs font-bold flex flex-col items-center space-y-2">
-                <span>Soft Slate (Grimsi)</span>
+                <span>Soft Slate</span>
               </button>
               <button type="button" onclick="setTheme('theme-black')" class="p-4 rounded-2xl border border-zinc-700 bg-[#09090b] text-white text-xs font-bold flex flex-col items-center space-y-2">
                 <span>Dark Black</span>
@@ -620,6 +618,7 @@
       });
     }
 
+    // AI ASİSTAN MOTORU (SABİT YANLIŞ RAKAMLAR YERİNE ANLIK PİYASA TAKİP YÖNLENDİRMESİ)
     function sendAiMessage() {
       const input = document.getElementById('ai-input');
       const txt = input.value.trim();
@@ -644,14 +643,12 @@
     }
 
     function getAiResponse(q) {
-      if(q.includes('altın') || q.includes('gold')) {
-        return "💰 <b>Altın Yatırımı:</b> Enflasyona karşı birikimlerini korumak için fiziki gram altın veya altın fonlarını tercih edebilirsin.";
-      } else if(q.includes('döviz') || q.includes('dolar') || q.includes('euro')) {
-        return "💱 <b>Döviz & Portföy:</b> Paranızı tek bir varlıkta tutmak yerine Altın, Döviz ve Mevduat arasında sepet yaparak riskinizi bölebilirsiniz.";
+      if(q.includes('altın') || q.includes('gram') || q.includes('gold') || q.includes('dolar') || q.includes('euro') || q.includes('döviz') || q.includes('kur') || q.includes('ne kadar') || q.includes('rakam')) {
+        return "📊 <b>Piyasa Bilgilendirmesi:</b> Altın ve döviz kurları saniyelik olarak küresel piyasalarda değiştiği için yanlış yönlendirmemek adına sabit rakam paylaşmıyorum. Güncel, saniyelik ve canlı rakamları takip etmek için şu güvenilir platformları kullanabilirsin:<br><br>• <a href='https://www.haremaltin.com' target='_blank' class='text-emerald-500 font-bold underline'>Harem Altın</a><br>• <a href='https://bigpara.hurriyet.com.tr' target='_blank' class='text-emerald-500 font-bold underline'>Bigpara</a><br>• <a href='https://tr.investing.com' target='_blank' class='text-emerald-500 font-bold underline'>Investing.com</a>";
       } else if(q.includes('nasıl') || q.includes('kullan') || q.includes('uygulama') || q.includes('hedef')) {
-        return "📱 <b>Uygulama Rehberi:</b><br>1. <b>'Hedeflerim'</b> sekmesinden yeni hedef oluştur ve rengini seç.<br>2. <b>'Ayarlar'</b> menüsünden arayüz temasını ve profilini değiştir!";
+        return "📱 <b>Uygulama Rehberi:</b><br>1. <b>'Hedeflerim'</b> sekmesinden yeni birikim hedefi oluştur, rengini ve önceliğini seç.<br>2. Katkı ekleyerek yüzdelik ilerlemeni takip et.<br>3. <b>'Ayarlar'</b> menüsünden arayüz temasını değiştirebilirsin!";
       } else {
-        return "💡 <b>Birikim Tavsiyesi:</b> Düzenli ve küçük birikimler büyük hedeflerin anahtarıdır! Bütçeni yönetmek için <b>'Hedeflerim'</b> sekmesini kullanabilirsin.";
+        return "💡 <b>Birikim Asistanı Tavsiyesi:</b> Düzenli ve disiplinli birikim yapmak gelecekteki özgürlüğün anahtarıdır! Bütçeni yönetmek için sol menüden hedeflerini güncel tutabilirsin.";
       }
     }
 
